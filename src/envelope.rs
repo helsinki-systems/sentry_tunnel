@@ -23,6 +23,7 @@ use std::str::FromStr;
 pub struct SentryEnvelope {
     pub raw_body: String,
     pub dsn: Dsn,
+    pub x_forwarded_for: String,
 }
 
 /**
@@ -83,6 +84,7 @@ impl SentryEnvelope {
         let request = Request::builder()
             .uri(uri)
             .header("Content-type", "application/x-sentry-envelope")
+            .header("X-Forwarded-For", &self.x_forwarded_for)
             .method("POST")
             .body(self.raw_body.clone())?;
         debug!(
@@ -100,7 +102,7 @@ impl SentryEnvelope {
     /**
      * Attempt to parse a string into an envelope
      */
-    pub fn try_new_from_body(body: String) -> Result<SentryEnvelope, AError> {
+    pub fn try_new_from_body(body: String, x_forwarded_for: String) -> Result<SentryEnvelope, AError> {
         if body.lines().count() == 3 {
             let header = body.lines().next().ok_or(BodyError::InvalidNumberOfLines)?;
             let header: Value =
@@ -111,6 +113,7 @@ impl SentryEnvelope {
                     Ok(SentryEnvelope {
                         dsn,
                         raw_body: body,
+                        x_forwarded_for,
                     })
                 } else {
                     Err(AError::new(BodyError::InvalidDsnValue))

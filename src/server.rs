@@ -11,7 +11,7 @@ use gotham::pipeline::single_middleware;
 use gotham::router::{
     builder::build_router, builder::DefineSingleRoute, builder::DrawRoutes, Router,
 };
-use gotham::state::{FromState, State};
+use gotham::state::{FromState, State, client_addr};
 use gotham_derive::StateData;
 
 use log::*;
@@ -37,8 +37,8 @@ struct TunnelConfig {
     inner: Arc<Config>,
 }
 
-fn parse_body(body: String) -> Result<SentryEnvelope, AError> {
-    SentryEnvelope::try_new_from_body(body)
+fn parse_body(body: String, x_forwarded_for: String) -> Result<SentryEnvelope, AError> {
+    SentryEnvelope::try_new_from_body(body, x_forwarded_for)
 }
 
 /**
@@ -103,9 +103,23 @@ async fn tunnel_handler(state: &mut State) -> Result<Response<Body>, AError> {
 
     let full_body = body::to_bytes(Body::take_from(state)).await?;
     let body_content = String::from_utf8(full_body.to_vec())?;
-    let sentry_instance = parse_body(body_content)?;
 
+    // Calculate X-Forwarded-For
     let config = TunnelConfig::borrow_from(state);
+    let client_addr = client_addr(&state).expect("no client address");
+    let x_forwarded_for = if config.inner.trust_x_forwarded_for {
+        headers
+        .get("X-Forwarded-For")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|s| s.split(',').next())
+        .map(|s| s.trim().to_string())
+        .unwrap_or(client_addr.to_string())
+    } else {
+        client_addr.to_string()
+    };
+
+    let sentry_instance = parse_body(body_content, x_forwarded_for)?;
+
     let hosts = &config.inner.remote_hosts;
     if config
         .inner

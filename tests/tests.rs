@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use sentry_tunnel::config::Host;
     use gotham::hyper::http::{header, HeaderValue, StatusCode};
     use gotham::test::TestServer;
+    use sentry_tunnel::config::Host;
 
     use httpmock::prelude::*;
     use mime::Mime;
@@ -23,6 +23,7 @@ mod tests {
             port: 7878,
             tunnel_path: "/tunnel".to_string(),
             ip: "0.0.0.0".to_string(),
+            trust_x_forwarded_for: false,
         };
         let test_server = TestServer::new(router(
             &test_config.tunnel_path.clone(),
@@ -63,6 +64,7 @@ mod tests {
             port: 7878,
             tunnel_path: "/tunnel".to_string(),
             ip: "0.0.0.0".to_string(),
+            trust_x_forwarded_for: false,
         };
         let test_server = TestServer::new(router(
             &test_config.tunnel_path.clone(),
@@ -102,6 +104,7 @@ mod tests {
             port: 7878,
             tunnel_path: "/tunnel".to_string(),
             ip: "0.0.0.0".to_string(),
+            trust_x_forwarded_for: false,
         };
         let test_server = TestServer::new(router(
             &test_config.tunnel_path.clone(),
@@ -141,6 +144,7 @@ mod tests {
             port: 7878,
             tunnel_path: "/tunnel".to_string(),
             ip: "0.0.0.0".to_string(),
+            trust_x_forwarded_for: false,
         };
         let test_server = TestServer::new(router(
             &test_config.tunnel_path.clone(),
@@ -171,7 +175,7 @@ mod tests {
 
         assert_eq!(String::from_utf8(body).unwrap(), expc);
     }
-    
+
     #[test]
     fn test_big_envelope() {
         let server = MockServer::start();
@@ -185,6 +189,7 @@ mod tests {
             port: 7878,
             tunnel_path: "/tunnel".to_string(),
             ip: "0.0.0.0".to_string(),
+            trust_x_forwarded_for: false,
         };
         let test_server = TestServer::new(router(
             &test_config.tunnel_path.clone(),
@@ -215,6 +220,5 @@ mod tests {
 
         sentry_mock.assert();
         assert_eq!(response.status(), StatusCode::OK);
-    
     }
 }

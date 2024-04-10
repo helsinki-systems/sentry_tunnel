@@ -20,6 +20,7 @@ pub struct Config {
     pub port: u16,
     pub tunnel_path: String,
     pub ip: String,
+    pub trust_x_forwarded_for: bool,
 }
 
 impl Display for Config {
@@ -40,6 +41,7 @@ impl Config {
      * - TUNNEL_LISTEN_PORT : Optionnal listen port, 7878 by default
      * - TUNNEL_PATH : Url path where this tunnel is waiting for sentry requests. By default
      * - TUNNEL_IP : Listen interface. Optional, 127.0.0.1 by default.
+     * - TRUST_X_FORWARDED_FOR : Trust X-Forwarded-For headers, false by default
      */
     pub fn new_from_env_variables() -> Result<Config, String> {
         let mut options = ListOptions::new();
@@ -54,6 +56,7 @@ impl Config {
         let tunnel_path: String =
             envmnt::get_parse("TUNNEL_PATH").unwrap_or_else(|_| "/tunnel".to_string());
         let ip: String = envmnt::get_parse("TUNNEL_IP").unwrap_or_else(|_| "127.0.0.1".to_string());
+        let trust_x_forwarded_for: bool = envmnt::get_parse("TRUST_X_FORWARDED_FOR").unwrap_or_else(|_| false);
         let valid_remote_hosts = Config::clean_remote_hosts(&remote_hosts);
         if valid_remote_hosts.len() == 0 {
             Err("No remote hosts to forward sentry envelopes to".to_string())
@@ -64,6 +67,7 @@ impl Config {
                 port,
                 tunnel_path,
                 ip,
+                trust_x_forwarded_for,
             })
         }
     }

@@ -23,6 +23,7 @@ This proxy looks for the following environnement variables :
 * `TUNNEL_LISTEN_PORT` : The port that this application will bind to. Example : `TUNNEL_LISTEN_PORT=7878`. This is optional, the default value is 7878.
 * `TUNNEL_PATH` : The url path where the tunnel will be waiting for tunneled request. Example : `TUNNEL_PATH=/tunnel`. This is optional, the default value is '/tunnel'.
 * `TUNNEL_IP` : The ip that this application will listen on. Optional, the default value is `127.0.0.1`.
+* `TRUST_X_FORWARDED_FOR` : Trust `X-Forwarded-For` headers. Optional, the default value is `false`.
 
 ## Running with docker
 
