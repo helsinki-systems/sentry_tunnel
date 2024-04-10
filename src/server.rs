@@ -71,7 +71,7 @@ impl Display for HeaderError {
 
 impl IntoResponse for HeaderError {
     fn into_response(self, state: &State) -> Response<Body> {
-        warn!("{}", self);
+        trace!("{}", self);
         let mime = "text/plain".parse::<Mime>().unwrap();
         create_response(state, StatusCode::BAD_REQUEST, mime, format!("{}", self))
     }

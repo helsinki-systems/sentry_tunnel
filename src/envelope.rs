@@ -59,7 +59,7 @@ impl Error for BodyError {}
 
 impl IntoResponse for BodyError {
     fn into_response(self, state: &State) -> Response<Body> {
-        warn!("{}", self);
+        trace!("{}", self);
         let mime = "application/json".parse::<Mime>().unwrap();
         create_response(state, StatusCode::BAD_REQUEST, mime, format!("{}", self))
     }
@@ -85,7 +85,7 @@ impl SentryEnvelope {
             .header("Content-type", "application/x-sentry-envelope")
             .method("POST")
             .body(self.raw_body.clone())?;
-        info!(
+        debug!(
             "Sending HTTP {} {} - body={}",
             request.method(),
             request.uri(),
