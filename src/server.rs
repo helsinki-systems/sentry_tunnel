@@ -36,10 +36,6 @@ struct TunnelConfig {
     inner: Arc<Config>,
 }
 
-fn parse_body(body: String, x_forwarded_for: String) -> Result<SentryEnvelope, AError> {
-    SentryEnvelope::try_new_from_body(body, x_forwarded_for)
-}
-
 /**
  * This enum reprensent an header parsing error
  */
@@ -100,8 +96,8 @@ async fn tunnel_handler(state: &mut State) -> Result<Response<Body>, AError> {
     let headers = HeaderMap::take_from(state);
     check_content_length(&headers)?;
 
-    let full_body = body::to_bytes(Body::take_from(state)).await?;
-    let body_content = String::from_utf8(full_body.to_vec())?;
+    let mut full_body = body::to_bytes(Body::take_from(state)).await?;
+    let original_body = full_body.clone();
 
     // Calculate X-Forwarded-For
     let config = TunnelConfig::borrow_from(state);
@@ -117,7 +113,24 @@ async fn tunnel_handler(state: &mut State) -> Result<Response<Body>, AError> {
         client_addr.to_string()
     };
 
-    let sentry_instance = parse_body(body_content, x_forwarded_for)?;
+    let max_length = match String::from_utf8(full_body.to_vec()) {
+        Ok(body_content) => body_content.len(),
+        Err(e) => e.utf8_error().valid_up_to(),
+    };
+    // safe if max_length is equal to the length of the string
+    let is_safe = max_length == original_body.len();
+    let partial_body = full_body.split_to(max_length);
+    let body_content = String::from_utf8(if !is_safe {
+        partial_body.to_vec()
+    } else {
+        original_body.to_vec()
+    })?;
+    let sentry_instance = SentryEnvelope::try_new_from_body(
+        body_content,
+        original_body.to_vec(),
+        is_safe,
+        x_forwarded_for,
+    )?;
 
     let hosts = &config.inner.remote_hosts;
     if config

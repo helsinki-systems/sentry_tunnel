@@ -21,8 +21,9 @@ use std::str::FromStr;
  */
 #[derive(Debug)]
 pub struct SentryEnvelope {
-    pub raw_body: String,
+    pub raw_body: Vec<u8>,
     pub dsn: Dsn,
+    pub is_safe: bool,
     pub x_forwarded_for: String,
 }
 
@@ -85,12 +86,25 @@ impl SentryEnvelope {
             .header("Content-type", "application/x-sentry-envelope")
             .header("X-Forwarded-For", &self.x_forwarded_for)
             .method("POST")
-            .body(self.raw_body.clone())?;
+            .body(if !self.is_safe {
+                self.raw_body.clone()
+            } else {
+                String::from_utf8(self.raw_body.clone())
+                    .unwrap()
+                    .into_bytes()
+            })?;
         debug!(
             "Sending HTTP {} {} - body={}",
             request.method(),
             request.uri(),
-            request.body()
+            // request.body().len() if not is_safe else request.body()
+            if !self.is_safe {
+                format!("<{} bytes>", request.body().len())
+            } else if request.body().is_empty() {
+                format!("{:?}", self.raw_body)
+            } else {
+                format!("<{} bytes> (safe)", request.body().len())
+            }
         );
         match request.send_async().await {
             Ok(_) => Ok(()),
@@ -103,28 +117,35 @@ impl SentryEnvelope {
      */
     pub fn try_new_from_body(
         body: String,
+        full_body: Vec<u8>,
+        is_safe: bool,
         x_forwarded_for: String,
     ) -> Result<SentryEnvelope, AError> {
-        if body.lines().count() == 3 {
-            let header = body.lines().next().ok_or(BodyError::InvalidNumberOfLines)?;
-            let header: Value =
-                serde_json::from_str(header).map_err(BodyError::InvalidHeaderJson)?;
-            if let Some(dsn) = header.get("dsn") {
-                if let Some(dsn_str) = dsn.as_str() {
-                    let dsn = Dsn::from_str(dsn_str)?;
-                    Ok(SentryEnvelope {
-                        dsn,
-                        raw_body: body,
-                        x_forwarded_for,
-                    })
+        let mut dsn: Option<Dsn> = None;
+        let mut lines = body.lines();
+        // check the first 50 lines for dsn
+        for _ in 0..std::cmp::min(body.lines().count(), 50) {
+            let line = lines.next().ok_or(BodyError::InvalidNumberOfLines)?;
+            let header: Value = serde_json::from_str(line).map_err(BodyError::InvalidHeaderJson)?;
+            if let Some(dsn_value) = header.get("dsn") {
+                if let Some(dsn_str) = dsn_value.as_str() {
+                    dsn = Some(Dsn::from_str(dsn_str)?);
+                    break;
                 } else {
-                    Err(AError::new(BodyError::InvalidDsnValue))
+                    return Err(AError::new(BodyError::InvalidDsnValue));
                 }
-            } else {
-                Err(AError::new(BodyError::MissingDsnKeyInHeader))
             }
+        }
+        // SentryEnvelope
+        if let Some(dsn) = dsn {
+            Ok(SentryEnvelope {
+                dsn,
+                raw_body: full_body,
+                is_safe,
+                x_forwarded_for,
+            })
         } else {
-            Err(AError::new(BodyError::InvalidNumberOfLines))
+            Err(AError::new(BodyError::MissingDsnKeyInHeader))
         }
     }
 }
