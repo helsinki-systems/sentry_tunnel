@@ -13,21 +13,20 @@ path="src/main.rs"
 name="sentry_tunnel"
 
 [dependencies]
-gotham = "0.6.0"
-gotham_derive = "0.6.0"
+gotham = "0.7.0"
 futures-util = "0.3.14"
 serde = "1.0"
 serde_json = "1.0"
 isahc = {version = "1.5", features = ["static-ssl", "http2", "static-curl", "text-decoding"], default_features=false}
 anyhow = "1.0"
-envmnt = "0.9"
+envmnt = "0.10"
 log = "0.4"
-stderrlog = "0.5"
+stderrlog = "0.6"
 mime = "0.3"
 url = "2.2"
-sentry-types = "0.23.0"
+sentry-types = "0.34.0"
 tokio = { version = "1.11.0", features = ["full"] }
 
 
 [dev-dependencies]
-httpmock = "0.6"
+httpmock = "0.7"

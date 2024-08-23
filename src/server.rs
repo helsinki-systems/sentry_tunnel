@@ -6,13 +6,12 @@ use gotham::helpers::http::response::create_empty_response;
 use gotham::helpers::http::response::create_response;
 use gotham::hyper::{body, header, Body, HeaderMap, Response, StatusCode};
 use gotham::middleware::state::StateMiddleware;
-use gotham::pipeline::single::single_pipeline;
-use gotham::pipeline::single_middleware;
+use gotham::pipeline::{single_pipeline, single_middleware};
 use gotham::router::{
     builder::build_router, builder::DefineSingleRoute, builder::DrawRoutes, Router,
 };
 use gotham::state::{FromState, State, client_addr};
-use gotham_derive::StateData;
+use gotham::prelude::StateData;
 
 use log::*;
 
