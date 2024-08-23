@@ -108,7 +108,7 @@ impl SentryEnvelope {
         if body.lines().count() == 3 {
             let header = body.lines().next().ok_or(BodyError::InvalidNumberOfLines)?;
             let header: Value =
-                serde_json::from_str(header).map_err(|e| BodyError::InvalidHeaderJson(e))?;
+                serde_json::from_str(header).map_err(BodyError::InvalidHeaderJson)?;
             if let Some(dsn) = header.get("dsn") {
                 if let Some(dsn_str) = dsn.as_str() {
                     let dsn = Dsn::from_str(dsn_str)?;

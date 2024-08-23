@@ -105,7 +105,7 @@ async fn tunnel_handler(state: &mut State) -> Result<Response<Body>, AError> {
 
     // Calculate X-Forwarded-For
     let config = TunnelConfig::borrow_from(state);
-    let client_addr = client_addr(&state).expect("no client address");
+    let client_addr = client_addr(state).expect("no client address");
     let x_forwarded_for = if config.inner.trust_x_forwarded_for {
         headers
             .get("X-Forwarded-For")

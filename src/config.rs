@@ -57,9 +57,9 @@ impl Config {
             envmnt::get_parse("TUNNEL_PATH").unwrap_or_else(|_| "/tunnel".to_string());
         let ip: String = envmnt::get_parse("TUNNEL_IP").unwrap_or_else(|_| "127.0.0.1".to_string());
         let trust_x_forwarded_for: bool =
-            envmnt::get_parse("TRUST_X_FORWARDED_FOR").unwrap_or_else(|_| false);
+            envmnt::get_parse("TRUST_X_FORWARDED_FOR").unwrap_or(false);
         let valid_remote_hosts = Config::clean_remote_hosts(&remote_hosts);
-        if valid_remote_hosts.len() == 0 {
+        if valid_remote_hosts.is_empty() {
             Err("No remote hosts to forward sentry envelopes to".to_string())
         } else {
             Ok(Config {
@@ -90,6 +90,6 @@ impl Config {
                 error!("{} is not a valid url", host)
             }
         }
-        return result;
+        result
     }
 }
