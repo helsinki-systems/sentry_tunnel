@@ -6,12 +6,12 @@ use gotham::helpers::http::response::create_empty_response;
 use gotham::helpers::http::response::create_response;
 use gotham::hyper::{body, header, Body, HeaderMap, Response, StatusCode};
 use gotham::middleware::state::StateMiddleware;
-use gotham::pipeline::{single_pipeline, single_middleware};
+use gotham::pipeline::{single_middleware, single_pipeline};
+use gotham::prelude::StateData;
 use gotham::router::{
     builder::build_router, builder::DefineSingleRoute, builder::DrawRoutes, Router,
 };
-use gotham::state::{FromState, State, client_addr};
-use gotham::prelude::StateData;
+use gotham::state::{client_addr, FromState, State};
 
 use log::*;
 
@@ -108,11 +108,11 @@ async fn tunnel_handler(state: &mut State) -> Result<Response<Body>, AError> {
     let client_addr = client_addr(&state).expect("no client address");
     let x_forwarded_for = if config.inner.trust_x_forwarded_for {
         headers
-        .get("X-Forwarded-For")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.split(',').next())
-        .map(|s| s.trim().to_string())
-        .unwrap_or(client_addr.to_string())
+            .get("X-Forwarded-For")
+            .and_then(|v| v.to_str().ok())
+            .and_then(|s| s.split(',').next())
+            .map(|s| s.trim().to_string())
+            .unwrap_or(client_addr.to_string())
     } else {
         client_addr.to_string()
     };
@@ -156,17 +156,13 @@ async fn post_tunnel_handler(mut state: State) -> HandlerResult {
         Ok(val) => Ok((state, val)),
         Err(error) => {
             let mime = "text/plain".parse::<Mime>().unwrap();
-            let res: (StatusCode, Mime, String) = (
-                StatusCode::BAD_REQUEST,
-                mime,
-                format!("{}", error),
-            );
+            let res: (StatusCode, Mime, String) =
+                (StatusCode::BAD_REQUEST, mime, format!("{}", error));
             let response = res.into_response(&state);
             Ok((state, response))
         }
     }
 }
-
 
 async fn health_handler(state: State) -> HandlerResult {
     let response = Response::builder()

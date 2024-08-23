@@ -72,8 +72,7 @@ impl SentryEnvelope {
      */
     pub fn dsn_host_is_valid(&self, host: &[Host]) -> bool {
         let envelope_host = self.dsn.host().to_string();
-        host.iter()
-            .any(|x| x.0 == envelope_host)
+        host.iter().any(|x| x.0 == envelope_host)
     }
 
     /**
@@ -102,7 +101,10 @@ impl SentryEnvelope {
     /**
      * Attempt to parse a string into an envelope
      */
-    pub fn try_new_from_body(body: String, x_forwarded_for: String) -> Result<SentryEnvelope, AError> {
+    pub fn try_new_from_body(
+        body: String,
+        x_forwarded_for: String,
+    ) -> Result<SentryEnvelope, AError> {
         if body.lines().count() == 3 {
             let header = body.lines().next().ok_or(BodyError::InvalidNumberOfLines)?;
             let header: Value =

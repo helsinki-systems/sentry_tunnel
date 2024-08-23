@@ -1,8 +1,8 @@
 use envmnt::ListOptions;
 
+use log::error;
 use std::fmt::{Display, Formatter};
 use url::Url;
-use log::error;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Host(pub String);
@@ -56,13 +56,14 @@ impl Config {
         let tunnel_path: String =
             envmnt::get_parse("TUNNEL_PATH").unwrap_or_else(|_| "/tunnel".to_string());
         let ip: String = envmnt::get_parse("TUNNEL_IP").unwrap_or_else(|_| "127.0.0.1".to_string());
-        let trust_x_forwarded_for: bool = envmnt::get_parse("TRUST_X_FORWARDED_FOR").unwrap_or_else(|_| false);
+        let trust_x_forwarded_for: bool =
+            envmnt::get_parse("TRUST_X_FORWARDED_FOR").unwrap_or_else(|_| false);
         let valid_remote_hosts = Config::clean_remote_hosts(&remote_hosts);
         if valid_remote_hosts.len() == 0 {
             Err("No remote hosts to forward sentry envelopes to".to_string())
         } else {
             Ok(Config {
-                remote_hosts : valid_remote_hosts,
+                remote_hosts: valid_remote_hosts,
                 project_ids,
                 port,
                 tunnel_path,
@@ -73,11 +74,11 @@ impl Config {
     }
 
     pub fn project_id_is_allowed(&self, id: &str) -> bool {
-        self.project_ids.iter().any(|v| v== id)
+        self.project_ids.iter().any(|v| v == id)
     }
 
-    pub fn clean_remote_hosts(hosts : &[String]) -> Vec<Host>{
-        let mut result = vec!();
+    pub fn clean_remote_hosts(hosts: &[String]) -> Vec<Host> {
+        let mut result = vec![];
         for host in hosts {
             if let Ok(host_url) = Url::parse(host) {
                 if let Some(hostname) = host_url.host_str() {
@@ -85,11 +86,10 @@ impl Config {
                 } else {
                     error!("{} is not an URL to a remote host", host_url)
                 }
-            }
-            else {
+            } else {
                 error!("{} is not a valid url", host)
             }
         }
-        return result
+        return result;
     }
 }
