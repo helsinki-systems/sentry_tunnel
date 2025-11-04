@@ -3,7 +3,7 @@ use gotham::anyhow::Error as AError;
 use gotham::handler::IntoResponse;
 use gotham::helpers::http::response::create_response;
 use gotham::hyper::StatusCode;
-use gotham::hyper::{body::Body, Response};
+use gotham::hyper::{Response, body::Body};
 use gotham::state::State;
 use isahc::{Request, RequestExt};
 use mime::Mime;

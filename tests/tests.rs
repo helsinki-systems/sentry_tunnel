@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use gotham::hyper::http::{header, HeaderValue, StatusCode};
+    use gotham::hyper::http::{HeaderValue, StatusCode, header};
     use gotham::test::TestServer;
     use sentry_tunnel::config::Host;
 
@@ -8,7 +8,7 @@ mod tests {
     use mime::Mime;
     use sentry_tunnel::config::Config;
     use sentry_tunnel::envelope::BodyError;
-    use sentry_tunnel::server::{router, HeaderError};
+    use sentry_tunnel::server::{HeaderError, router};
 
     #[test]
     fn test_correct_behaviour() {
@@ -47,7 +47,7 @@ mod tests {
             )
             .with_header(
                 header::CONTENT_LENGTH,
-                HeaderValue::from_str(&format!("{}", json.as_bytes().len())).unwrap(),
+                HeaderValue::from_str(&format!("{}", json.len())).unwrap(),
             )
             .perform()
             .unwrap();
@@ -84,7 +84,7 @@ mod tests {
             )
             .with_header(
                 header::CONTENT_LENGTH,
-                HeaderValue::from_str(&format!("{}", json.as_bytes().len())).unwrap(),
+                HeaderValue::from_str(&format!("{}", json.len())).unwrap(),
             )
             .perform()
             .unwrap();
@@ -124,7 +124,7 @@ mod tests {
             )
             .with_header(
                 header::CONTENT_LENGTH,
-                HeaderValue::from_str(&format!("{}", json.as_bytes().len())).unwrap(),
+                HeaderValue::from_str(&format!("{}", json.len())).unwrap(),
             )
             .perform()
             .unwrap();
@@ -164,7 +164,7 @@ mod tests {
             )
             .with_header(
                 header::CONTENT_LENGTH,
-                HeaderValue::from_str(&format!("{}", json.as_bytes().len())).unwrap(),
+                HeaderValue::from_str(&format!("{}", json.len())).unwrap(),
             )
             .perform()
             .unwrap();
@@ -213,7 +213,7 @@ mod tests {
             )
             .with_header(
                 header::CONTENT_LENGTH,
-                HeaderValue::from_str(&format!("{}", json.as_bytes().len())).unwrap(),
+                HeaderValue::from_str(&format!("{}", json.len())).unwrap(),
             )
             .perform()
             .unwrap();

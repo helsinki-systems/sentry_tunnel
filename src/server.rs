@@ -4,14 +4,14 @@ use gotham::handler::HandlerResult;
 use gotham::handler::IntoResponse;
 use gotham::helpers::http::response::create_empty_response;
 use gotham::helpers::http::response::create_response;
-use gotham::hyper::{body, header, Body, HeaderMap, Response, StatusCode};
+use gotham::hyper::{Body, HeaderMap, Response, StatusCode, body, header};
 use gotham::middleware::state::StateMiddleware;
 use gotham::pipeline::{single_middleware, single_pipeline};
 use gotham::prelude::StateData;
 use gotham::router::{
-    builder::build_router, builder::DefineSingleRoute, builder::DrawRoutes, Router,
+    Router, builder::DefineSingleRoute, builder::DrawRoutes, builder::build_router,
 };
-use gotham::state::{client_addr, FromState, State};
+use gotham::state::{FromState, State, client_addr};
 
 use log::*;
 

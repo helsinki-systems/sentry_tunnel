@@ -37,7 +37,7 @@ impl Config {
      * Create a new config from env variables :
      * - TUNNEL_REMOTE_HOST : Comma separated list of valid sentry relays
      * - TUNNEL_PROJECT_IDS : Comma separated list of valid project ids that can be forwarded to
-     * sentry
+     *   sentry
      * - TUNNEL_LISTEN_PORT : Optionnal listen port, 7878 by default
      * - TUNNEL_PATH : Url path where this tunnel is waiting for sentry requests. By default
      * - TUNNEL_IP : Listen interface. Optional, 127.0.0.1 by default.
