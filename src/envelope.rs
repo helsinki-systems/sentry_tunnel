@@ -1,9 +1,10 @@
 use crate::config::Host;
 use gotham::anyhow::Error as AError;
 use gotham::handler::IntoResponse;
+use gotham::helpers::http::Body;
 use gotham::helpers::http::response::create_response;
+use gotham::hyper::Response;
 use gotham::hyper::StatusCode;
-use gotham::hyper::{Response, body::Body};
 use gotham::state::State;
 use isahc::{Request, RequestExt};
 use mime::Mime;

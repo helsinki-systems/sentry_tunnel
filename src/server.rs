@@ -2,9 +2,11 @@ use anyhow::Error as AError;
 
 use gotham::handler::HandlerResult;
 use gotham::handler::IntoResponse;
+use gotham::helpers::http::Body;
 use gotham::helpers::http::response::create_empty_response;
 use gotham::helpers::http::response::create_response;
-use gotham::hyper::{Body, HeaderMap, Response, StatusCode, body, header};
+use gotham::http_body_util::BodyExt;
+use gotham::hyper::{HeaderMap, Response, StatusCode, header};
 use gotham::middleware::state::StateMiddleware;
 use gotham::pipeline::{single_middleware, single_pipeline};
 use gotham::prelude::StateData;
@@ -96,7 +98,8 @@ async fn tunnel_handler(state: &mut State) -> Result<Response<Body>, AError> {
     let headers = HeaderMap::take_from(state);
     check_content_length(&headers)?;
 
-    let mut full_body = body::to_bytes(Body::take_from(state)).await?;
+    let body = Body::take_from(state);
+    let mut full_body = body.collect().await?.to_bytes();
     let original_body = full_body.clone();
 
     // Calculate X-Forwarded-For
@@ -178,11 +181,8 @@ async fn post_tunnel_handler(mut state: State) -> HandlerResult {
 }
 
 async fn health_handler(state: State) -> HandlerResult {
-    let response = Response::builder()
-        .status(StatusCode::OK)
-        .header("Content-Type", "text/plain")
-        .body(Body::from("OK"))
-        .unwrap();
+    let mime: Mime = "text/plain".parse::<Mime>().unwrap();
+    let response = create_response(&state, StatusCode::OK, mime, "OK");
     Ok((state, response))
 }
 
